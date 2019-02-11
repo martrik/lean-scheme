@@ -11,31 +11,58 @@ open topological_space
 
 universe u 
 
+section stalk_on_basis
+
 variables {α : Type u} [topological_space α] 
 variables {B : set (opens α )} {HB : opens.is_basis B}
+
+variables (Bstd : (⟨set.univ, is_open_univ⟩ : opens α) ∈ B 
+                ∧ ∀ {U V}, U ∈ B → V ∈ B → U ∩ V ∈ B)
+
 variables (F : presheaf_on_basis α HB) (x : α)
 
+include Bstd
 structure stalk_on_basis.elem :=
 (U  : opens α)
 (BU : U ∈ B)
 (Hx : x ∈ U)
 (s  : F BU)
 
+#check stalk_on_basis.elem Bstd F x
+
+def stalk_of_rings_elem_add [∀ {U} (BU : U ∈ B), comm_ring (F BU)]:
+stalk_on_basis.elem Bstd F x → 
+stalk_on_basis.elem Bstd F x → 
+stalk_on_basis.elem Bstd F x :=
+λ s t, 
+{U := s.U ∩ t.U, 
+BU := Bstd.2 s.BU t.BU,
+Hx := ⟨s.Hx, t.Hx⟩, 
+s := F.res s.BU _ (set.inter_subset_left _ _) s.s + 
+     F.res t.BU _ (set.inter_subset_right _ _) t.s}
+
+variables [∀ {U} (BU : U ∈ B), comm_ring (F BU)]
+
+instance : has_add (stalk_on_basis.elem Bstd F x) :=
+{add := stalk_of_rings_elem_add Bstd F x }
+
 -- Equivalence relation on the set of pairs. (U,s) ~ (V,t) iff there exists W 
 -- open s.t. x ∈ W ⊆ U ∩ V, and s|W = t|W.
 
-def stalk_on_basis.relation : stalk_on_basis.elem F x → stalk_on_basis.elem F x → Prop :=
+def stalk_on_basis.relation : stalk_on_basis.elem Bstd F x → stalk_on_basis.elem Bstd F x → Prop :=
 λ Us Vt,
     ∃ W (BW : W ∈ B) (HxW : x ∈ W) (HWU : W ⊆ Us.U) (HWV : W ⊆ Vt.U),
     F.res Us.BU BW HWU Us.s = F.res Vt.BU BW HWV Vt.s
 
-lemma stalk_on_basis.relation.reflexive : reflexive (stalk_on_basis.relation F x) :=
-λ ⟨U, OU, HxU, s⟩, ⟨U, OU, HxU, set.subset.refl _, set.subset.refl _, rfl⟩
+#check stalk_on_basis.relation Bstd F x
 
-lemma stalk_on_basis.relation.symmetric : symmetric (stalk_on_basis.relation F x) :=
+lemma stalk_on_basis.relation.reflexive : reflexive (stalk_on_basis.relation Bstd F x) :=
+λ ⟨U, OU, HxU, s⟩, begin end --⟨U, OU, HxU, set.subset.refl _, set.subset.refl _, rfl⟩
+
+lemma stalk_on_basis.relation.symmetric : symmetric (stalk_on_basis.relation Bstd F x) :=
 λ Us Vt ⟨W, OW, HxW, HWU, HWV, Hres⟩, ⟨W, OW, HxW, HWV, HWU, Hres.symm⟩
 
-lemma stalk_on_basis.relation.transitive : transitive (stalk_on_basis.relation F x) :=
+lemma stalk_on_basis.relation.transitive : transitive (stalk_on_basis.relation Bstd F x) :=
 λ ⟨U, BU, HxU, sU⟩ ⟨V, BV, HxV, sV⟩ ⟨W, BW, HxW, sW⟩,
 λ ⟨R, BR, HxR, HRU, HRV, HresR⟩ ⟨S, BS, HxS, HSV, HSW, HresS⟩,
 have HxRS : x ∈ R ∩ S := ⟨HxR, HxS⟩,
@@ -67,3 +94,5 @@ instance stalk_on_basis.setoid : setoid (stalk_on_basis.elem F x) :=
 -- We define a stalk as the set of stalk elements under the defined relation.
 
 definition stalk_on_basis := quotient (stalk_on_basis.setoid F x)
+
+end stalk_on_basis

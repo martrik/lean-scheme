@@ -44,22 +44,22 @@ def gluing (F : presheaf α) :=
 
 end sheaf_condition
 
--- Definition of a sheaf of types.
+-- Definition of a sheaf (of types).
 
-structure sheaf_of_types (α : Type u) [T : topological_space α] :=
+structure sheaf (α : Type u) [T : topological_space α] :=
 (F        : presheaf α)
 (locality : locality F)
 (gluing   : gluing F) 
 
-section sheaf_of_types
+section sheaf
 
 variables {α : Type u} [T : topological_space α]
 include T
 
-instance : has_coe (sheaf_of_types α) (presheaf α) := 
+instance : has_coe (sheaf α) (presheaf α) := 
 ⟨λ S, S.F⟩
 
-def is_sheaf_of_types (F : presheaf α) :=
+def is_sheaf (F : presheaf α) :=
 locality F ∧ gluing F
 
-end sheaf_of_types
+end sheaf

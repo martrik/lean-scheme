@@ -144,7 +144,7 @@ refine ⟨_, _⟩,
 end
 
 theorem extension_is_sheaf (F : presheaf_on_basis α HB) (HF : is_sheaf_on_basis F)
-: is_sheaf_of_types (F ₑₓₜ) := 
+: is_sheaf (F ₑₓₜ) := 
 begin
   split,
   -- Locality.
